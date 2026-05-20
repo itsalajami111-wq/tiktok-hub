@@ -3,7 +3,7 @@
   "routes": [
     {
       "src": "/analyze",
-      "dest": "/analyze.py"
+      "dest": "/api/analyze.js"
     },
     {
       "src": "/(.*)",

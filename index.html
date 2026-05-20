@@ -1,17 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TikTok Content Hub – Hoxton Wealth</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', sans-serif; background: #0f0f0f; color: #f0f0f0; min-height: 100vh; }
+  header { background: #1a1a1a; border-bottom: 1px solid #2a2a2a; padding: 1.2rem 2rem; display: flex; align-items: center; justify-content: space-between; }
+  header h1 { font-size: 1.3rem; font-weight: 600; color: #fff; }
+  header p { font-size: 0.8rem; color: #888; margin-top: 2px; }
+  .controls { padding: 1.5rem 2rem; display: flex; gap: 1rem; align-items: center; background: #141414; border-bottom: 1px solid #2a2a2a; }
+  .search-box { display: flex; align-items: center; background: #222; border: 1px solid #333; border-radius: 8px; padding: 0.5rem 1rem; gap: 0.5rem; flex: 1; max-width: 400px; }
+  .search-box input { background: none; border: none; outline: none; color: #fff; font-size: 0.9rem; width: 100%; }
+  .btn { padding: 0.5rem 1.2rem; border-radius: 8px; border: none; font-size: 0.9rem; cursor: pointer; font-weight: 500; background: #ff2d55; color: #fff; transition: all 0.2s; }
+  .btn:hover { background: #e0233e; }
+  .btn:disabled { background: #555; cursor: not-allowed; }
+  .main { padding: 1.5rem 2rem; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.2rem; }
+  .card { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 12px; overflow: hidden; transition: transform 0.2s; }
+  .card:hover { transform: translateY(-3px); border-color: #444; }
+  .card-thumb { width: 100%; height: 180px; background: #222; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+  .card-thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .score-badge { position: absolute; top: 10px; right: 10px; padding: 4px 12px; border-radius: 20px; font-size: 0.78rem; font-weight: 700; }
+  .score-high { background: #16a34a; color: #fff; }
+  .score-mid { background: #d97706; color: #fff; }
+  .score-low { background: #555; color: #ccc; }
+  .card-body { padding: 1rem; }
+  .card-author { font-size: 0.75rem; color: #ff2d55; font-weight: 600; margin-bottom: 4px; text-transform: uppercase; }
+  .card-title { font-size: 0.88rem; color: #e0e0e0; line-height: 1.4; margin-bottom: 0.8rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .card-meta { display: flex; gap: 1rem; font-size: 0.78rem; color: #666; margin-bottom: 0.8rem; }
+  .ai-box { background: #111; border-left: 3px solid #ff2d55; padding: 0.5rem 0.7rem; font-size: 0.78rem; color: #aaa; border-radius: 0 4px 4px 0; margin-bottom: 0.5rem; line-height: 1.4; }
+  .ai-box strong { color: #ccc; }
+  .card-actions { display: flex; gap: 0.5rem; margin-top: 0.8rem; }
+  .card-actions a { flex: 1; padding: 0.4rem; border-radius: 6px; font-size: 0.78rem; text-align: center; text-decoration: none; background: #ff2d55; color: #fff; }
+  .loading { text-align: center; padding: 4rem; color: #555; }
+  .spinner { width: 32px; height: 32px; border: 3px solid #333; border-top-color: #ff2d55; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 1rem; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .empty { text-align: center; padding: 4rem; color: #555; }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>🎯 TikTok Content Hub</h1>
+    <p>Hoxton Wealth — Financial Planning Content Discovery</p>
+  </div>
+</header>
+<div class="controls">
+  <div class="search-box">
+    <span style="color:#555">🔍</span>
+    <input type="text" id="searchInput" placeholder="Search TikTok... e.g. financial planning" value="financial planning expat" />
+  </div>
+  <button class="btn" id="searchBtn" onclick="runSearch()">Search TikTok</button>
+</div>
+<div class="main">
+  <div class="loading" id="loadingEl" style="display:none;">
+    <div class="spinner"></div>
+    <div id="loadingMsg">Searching TikTok...</div>
+  </div>
+  <div class="empty" id="emptyEl">
+    <div style="font-size:2rem;margin-bottom:1rem;">🎬</div>
+    <div>Enter a keyword and click Search TikTok</div>
+  </div>
+  <div class="grid" id="cardGrid"></div>
+</div>
+<script>
+async function runSearch() {
+  const keyword = document.getElementById('searchInput').value.trim();
+  if (!keyword) return;
+  document.getElementById('loadingEl').style.display = 'block';
+  document.getElementById('emptyEl').style.display = 'none';
+  document.getElementById('cardGrid').innerHTML = '';
+  document.getElementById('searchBtn').disabled = true;
+  document.getElementById('loadingMsg').textContent = 'Searching TikTok for "' + keyword + '"... (AI is analyzing, please wait 30-60 seconds)';
+ 
+  try {
+    const resp = await fetch('/api/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ keyword })
+    });
+    const videos = await resp.json();
+    renderCards(videos);
+  } catch (err) {
+    alert('Something went wrong: ' + err.message);
+  }
+ 
+  document.getElementById('loadingEl').style.display = 'none';
+  document.getElementById('searchBtn').disabled = false;
+}
+ 
 function renderCards(videos) {
   const grid = document.getElementById('cardGrid');
   if (!videos.length) {
     document.getElementById('emptyEl').style.display = 'block';
+    document.getElementById('emptyEl').innerHTML = '<div style="font-size:2rem;margin-bottom:1rem;">😕</div><div style="color:#666">No videos passed the filter. Try a different keyword.</div>';
     return;
   }
-
+ 
   videos.forEach(v => {
     const scoreClass = v.score >= 8 ? 'score-high' : v.score >= 6 ? 'score-mid' : 'score-low';
     const card = document.createElement('div');
     card.className = 'card';
     card.innerHTML = `
       <div class="card-thumb">
-        ${v.thumbnail ? `<img src="${v.thumbnail}" loading="lazy" />` : '🎬'}
+        ${v.thumbnail ? `<img src="${v.thumbnail}" loading="lazy" onerror="this.style.display='none'" />` : '<span style="font-size:2rem">🎬</span>'}
         <div class="score-badge ${scoreClass}">AI ${v.score}/10</div>
       </div>
       <div class="card-body">
@@ -21,15 +115,20 @@ function renderCards(videos) {
           <span>👁 ${v.views.toLocaleString()}</span>
           <span>❤️ ${v.likes.toLocaleString()}</span>
           <span>💬 ${v.comments.toLocaleString()}</span>
+          <span>🔁 ${v.shares.toLocaleString()}</span>
         </div>
-        <div class="ai-reason">📌 Topic: ${v.topic}</div>
-        <div class="ai-reason">👥 Audience: ${v.audience_fit}</div>
-        <div class="ai-reason">💡 Idea: ${v.content_idea}</div>
-        <div class="ai-reason">📝 ${v.summary}</div>
+        <div class="ai-box"><strong>📌 Topic:</strong> ${v.topic || 'N/A'}</div>
+        <div class="ai-box"><strong>👥 Audience fit:</strong> ${v.audience_fit || 'N/A'}</div>
+        <div class="ai-box"><strong>🎙️ Tone:</strong> ${v.tone || 'N/A'}</div>
+        <div class="ai-box"><strong>💡 Content idea:</strong> ${v.content_idea || 'N/A'}</div>
+        <div class="ai-box"><strong>📝 Summary:</strong> ${v.summary || 'N/A'}</div>
         <div class="card-actions">
-          <a href="${v.url}" target="_blank">▶ Watch</a>
+          <a href="${v.url}" target="_blank">▶ Watch on TikTok</a>
         </div>
       </div>`;
     grid.appendChild(card);
   });
 }
+</script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "analyze.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/analyze",
+      "dest": "analyze.py"
+    },
+    {
+      "src": "/",
+      "dest": "index.html"
+    }
+  ]
+}

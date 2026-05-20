@@ -2,7 +2,7 @@
   "version": 2,
   "routes": [
     {
-      "src": "/analyze",
+      "src": "/api/analyze",
       "dest": "/api/analyze.js"
     },
     {

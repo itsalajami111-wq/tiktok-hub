@@ -25,14 +25,11 @@ export default async function handler(req, res) {
         const desc = info.desc || '';
         const views = stats.play_count || 0;
         const likes = stats.digg_count || 0;
-
-        const expatKeywords = ['expat', 'invest', 'wealth', 'retire', 'abroad', 'offshore', 'financial planning', 'tax', 'pension', 'savings'];
-        const matches = expatKeywords.filter(k => desc.toLowerCase().includes(k)).length;
+        const keywords = ['expat','invest','wealth','retire','abroad','offshore','tax','pension','savings','financial'];
+        const matches = keywords.filter(k => desc.toLowerCase().includes(k)).length;
         const score = Math.min(10, 5 + matches + (views > 500000 ? 1 : 0) + (likes > 50000 ? 1 : 0));
-
         return {
           author: info.author?.nickname || '',
-          username: info.author?.unique_id || '',
           desc,
           views,
           likes,
@@ -44,9 +41,9 @@ export default async function handler(req, res) {
           score,
           topic: matches > 0 ? 'Expat Finance' : 'General Finance',
           audience_fit: matches > 1 ? 'Good fit for expat audience' : 'Needs expat angle',
-          tone: likes > 10000 ? 'High engagement — good tone' : 'Moderate engagement',
-          content_idea: 'Adapt this content with expat-specific financial advice for Hoxton Wealth',
-          summary: `${views.toLocaleString()} views with ${matches} expat-relevant keywords found`
+          tone: likes > 10000 ? 'High engagement' : 'Moderate engagement',
+          content_idea: 'Adapt with expat-specific financial advice for Hoxton Wealth',
+          summary: `${views.toLocaleString()} views — ${matches} expat keywords found`
         };
       })
       .filter(v => v.views >= 100000 && v.likes >= 2000)
